@@ -74,4 +74,9 @@ Some choices for metrics are accuracy (ratio of number of correct predictions to
 
 *With the model compiled in Tensorflow, one can use .fit() and select the number of epochs or times the model will be exposed to the training set, and batch_sizes, number of training instances observed before the optimizer performs a weight update (normally there are many batches per epoch)*
 
-#### Running simple TF net and establishing baseline 
+#### Running simple TF net, establishing baseline and improving results with hidden layers
+In the first example from the book, a simple network with one denselayer is used (softmax activation function). While the results are not bad for the baseline model, at 92% accuracy in the training and 91% in the test. The baseline model in this case, defines the result from the simplest approach and the goal becomes to improve this. In neural networks, one possiblity is to improve them by adding hidden layers and different activation functions. More hidden layers, allow the network to learn more complex patterns hidden in the data (at the expense of possible overtraining). 
+
+Note: at some point, imprevement is impercetible and the loss seems to oscillate around a certain value. At this point, adding more layers won't improve the result further and it can be said that the result has converged. 
+
+Another way to improve the baseline model is by *dropout*. That is, dropping random values in the dense layer. *Dropout* is a very well known form of regularization (reducing the complexity) 
