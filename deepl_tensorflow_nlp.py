@@ -3,36 +3,14 @@ import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 
-W = tf.Variable(tf.ones(shape=(2, 2)), name="W")
-b = tf.Variable(tf.zeros(shape=(2)), name="b")
-
-
-@tf.function
-def model(x):
-    return W * x + b
-
-
-out_a = model([1, 0])
-print(out_a)
-
-# Defining a dense layer 
-
-NB_CLASSES = 10 
-RESHAPED = 784 
-model = tf.keras.models.Sequential()
-model.add(keras.layers.Dense(NB_CLASSES,
-    input_shape=(RESHAPED, ), kernel_initializer='zeros',
-    name='dense_layer', activation='softmax'))
-
-
 # Define a simple network to deal with MNIST 
-
 EPOCHS = 200 
 BATCH_SIZE = 128 # data fed at a time 
 VERBOSE = 1 
-NB_CLASSES = 1 # number of outputs (digits)
-N_HIDDEN = 128 
+NB_CLASSES = 10 # nodes in the output, number of outputs (digits)
+N_HIDDEN = 128 # nodes in the hidden layers
 VALIDATION_SPLIT = 0.2 # amount of TRAIN reserved for VALIDATION 
+DROPOUT = 0.3 # percentage, I guess
 
 # Load MNIST 
 mnist = keras.datasets.mnist
@@ -57,14 +35,23 @@ Y_test = tf.keras.utils.to_categorical(Y_test, NB_CLASSES)
 
 # Build the model 
 model = tf.keras.models.Sequential()
+model.add(keras.layers.Dense(N_HIDDEN,
+        input_shape=(RESHAPED, ), # need to define input size
+        name='dense_layer',
+        activation='relu'))
+model.add(keras.layers.Dropout(DROPOUT))
+model.add(keras.layers.Dense(N_HIDDEN,
+        name='dense_layer_2',
+        activation='relu'))
+model.add(keras.layers.Dropout(DROPOUT))
 model.add(keras.layers.Dense(NB_CLASSES,
-    input_shape=(RESHAPED, ), # need to define input size
-    name='dense_layer',
-    activation='softmax'))
+        name='dense_layer_3',
+        activation='softmax'))
 
 # Once the model is defined, it is necessary to compile it and
 # then fit it to the parameters
-model.compile(optimizer='SGD', loss='categorical_crossentropy', metrics=['accuracy'])
+model.summary()
+model.compile(optimizer='RMSProp', loss='categorical_crossentropy', metrics=['accuracy'])
 model.fit(X_train, Y_train,
           batch_size=BATCH_SIZE, epochs=EPOCHS,
           verbose=VERBOSE, validation_split=VALIDATION_SPLIT)
