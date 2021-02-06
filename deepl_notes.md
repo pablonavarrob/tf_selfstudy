@@ -79,4 +79,40 @@ In the first example from the book, a simple network with one denselayer is used
 
 Note: at some point, imprevement is impercetible and the loss seems to oscillate around a certain value. At this point, adding more layers won't improve the result further and it can be said that the result has converged. 
 
-Another way to improve the baseline model is by *dropout*. That is, dropping random values in the dense layer. *Dropout* is a very well known form of regularization (reducing the complexity) 
+One way to improve the baseline model besides adding layers is by *dropout*. That is, dropping random values in the dense layer. *Dropout* is a very well known form of regularization (reducing the complexity) Another way, would be to change the algorithm used to the optimization. Tensorflow includes a lot, most common are:
+
+- SGD: stochastic gradient descent, includes acceleration component. This acceleration helps SGD move in the relevant direction and dampen oscillations.
+- Adam and RMSProp: add a momentum component, which is proven to increase convergence speed at the expense of more computation.
+
+Even another way is to increase the amount of neurons per hidden layer. This increases the computation time expopnetially. However, the gains decrease more and more as the network grows in complexity, thus hitting diminishing returns. This can also reduce the performance as the model might be overfitted and will not generalize well, showing in a decreased accuracy. 
+
+Batch size is another parameter that can be modelled. While regular gradient descent tries to minimize the cost function taking into account all values at once, stochastic gradient descent actually considers small batches at once. 
+
+#### Regularization practices
+Regularization is adopted mainly to avoid *overfitting*. While a model needs to perform well on training data, it can become excessively complex to capture all the relations there present. A complex model might need a lot of time to be executed and while performance on training data can be good, it might perform poorly on validation data. This is because learns relations that are inherent to the training set and nothing else. This is actually *overfitting*.
+
+*As a general rule: if during the training we see that the loss increases on validation after an initial decrease, then there is a problem with model complexity and it is overfitting to the training data.*
+
+The hyperparameter $\lambda \geq 0$ controls the importance of having a simple model by choosing:
+
+$$
+min: \{ loss(\text{Training data} \; | \; \text{Model}) \} + \lambda \cdot complexity(\text{Model})
+$$
+
+There are three types of regularization:
+
+- L1 regularization, or LASSO: complexity of the model is expressed as the sum of the absolute values of the weights
+- L2 regularization, of Ridge: expressed as the sum of the squares of the weights. 
+- Elastic regularization: complexity is capture by a combination of the L1 and L2 techniques.  
+
+To add regularization to the model, one can use:
+
+```
+   from tf.keras.regularizers import l2, activity_l2
+   model.add(Dense(64, input_dim=64, W_regularizer=l2(0.01),
+   activity_regularizer=activity_l2(0.01)))
+```
+
+##### Batch normalization
+
+Enables an acceleration of the training by in some cases, halving the training epochs necessary, while offering some regularization. During training, weights change and therefore the inputs of the layers can also significantly change. Layers continuously readjust the weights to a different distribution for every batch. This may slow the model's trainig, and the idea is to make layer inputs more similar in distribution during epochs and batches. While sigmoid works well close to zero, gets stuck in values far away from it. If neurons fluctuate away from sigmoid 0, then said neuron may become unable to update its weights. One solution to this is to transform layer outputs into Gaussian distribution close to zero, thus achieving smaller variations from batch to batch. Activation input $x$ is center around zero by substracting the batch's mean $\mu$ from it. Result is divided by $\sigma + \epsilon$ (sum of batch's variance and a small number) to prevent division by zero. Then, a linear transformation $y = \lambda x + \beta$ ensures that the normalization is applied during trainig. For this, $\lambda$ and $\beta$ are also optimized during training. 
